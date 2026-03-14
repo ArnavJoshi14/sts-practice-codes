@@ -1,0 +1,111 @@
+import java.util.*;
+
+class TreeNode {
+    char val;
+    TreeNode left, right;
+    TreeNode(char val) { this.val = val; }
+}
+
+public class views {
+
+    // Shared BFS helper: returns list of [node, horizontalDistance] pairs
+    static List<int[]> bfsWithHD(TreeNode root) {
+        List<int[]> result = new ArrayList<>();
+        if (root == null) return result;
+        Queue<TreeNode> nodeQ = new LinkedList<>();
+        Queue<Integer> hdQ = new LinkedList<>();
+        nodeQ.offer(root); hdQ.offer(0);
+        while (!nodeQ.isEmpty()) {
+            TreeNode node = nodeQ.poll();
+            int hd = hdQ.poll();
+            result.add(new int[]{node.val, hd});
+            if (node.left != null)  { nodeQ.offer(node.left);  hdQ.offer(hd - 1); }
+            if (node.right != null) { nodeQ.offer(node.right); hdQ.offer(hd + 1); }
+        }
+        return result;
+    }
+
+    // HORIZONTAL VIEW - all nodes in BFS order
+    static List<Character> horizontalView(TreeNode root) {
+        List<Character> result = new ArrayList<>();
+        for (int[] entry : bfsWithHD(root)) result.add((char) entry[0]);
+        return result;
+    }
+
+    // VERTICAL VIEW - grouped by horizontal distance
+    static List<Character> verticalView(TreeNode root) {
+        Map<Integer, List<Character>> map = new TreeMap<>();
+        for (int[] entry : bfsWithHD(root))
+            map.computeIfAbsent(entry[1], k -> new ArrayList<>()).add((char) entry[0]);
+        List<Character> result = new ArrayList<>();
+        for (List<Character> col : map.values()) result.addAll(col);
+        return result;
+    }
+
+    // TOP VIEW - first node at each horizontal distance
+    static List<Character> topView(TreeNode root) {
+        Map<Integer, Character> map = new TreeMap<>();
+        for (int[] entry : bfsWithHD(root)) map.putIfAbsent(entry[1], (char) entry[0]);
+        return new ArrayList<>(map.values());
+    }
+
+    // BOTTOM VIEW - last node at each horizontal distance
+    static List<Character> bottomView(TreeNode root) {
+        Map<Integer, Character> map = new TreeMap<>();
+        for (int[] entry : bfsWithHD(root)) map.put(entry[1], (char) entry[0]);
+        return new ArrayList<>(map.values());
+    }
+
+    // LEFT VIEW - first node at each level
+    static List<Character> leftView(TreeNode root) {
+        List<Character> result = new ArrayList<>();
+        if (root == null) return result;
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        while (!q.isEmpty()) {
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = q.poll();
+                if (i == 0) result.add(node.val);
+                if (node.left != null)  q.offer(node.left);
+                if (node.right != null) q.offer(node.right);
+            }
+        }
+        return result;
+    }
+
+    // RIGHT VIEW - last node at each level
+    static List<Character> rightView(TreeNode root) {
+        List<Character> result = new ArrayList<>();
+        if (root == null) return result;
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        while (!q.isEmpty()) {
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = q.poll();
+                if (i == size - 1) result.add(node.val);
+                if (node.left != null)  q.offer(node.left);
+                if (node.right != null) q.offer(node.right);
+            }
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode('A');
+        root.left = new TreeNode('B');
+        root.right = new TreeNode('C');
+        root.left.left = new TreeNode('D');
+        root.left.right = new TreeNode('E');
+        root.right.left = new TreeNode('F');
+        root.right.right = new TreeNode('G');
+
+        System.out.println("Horizontal : " + horizontalView(root));
+        System.out.println("Vertical   : " + verticalView(root));
+        System.out.println("Left       : " + leftView(root));
+        System.out.println("Right      : " + rightView(root));
+        System.out.println("Top        : " + topView(root));
+        System.out.println("Bottom     : " + bottomView(root));
+    }
+}
